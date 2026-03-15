@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Filter, MessageSquarePlus, MoreVertical } from "lucide-react";
+import { Search, MessageSquarePlus, MoreVertical } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Chat, WaAccount } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -23,17 +24,26 @@ export function ChatList({ account, chats, selectedChat, onSelectChat }: ChatLis
   });
 
   return (
-    <div className="w-[340px] min-w-[340px] bg-panel border-r border-border flex flex-col">
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="w-[340px] min-w-[340px] bg-panel border-r border-border flex flex-col"
+    >
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-border bg-panel-header">
         <h2 className="font-semibold text-lg">WhatsApp</h2>
         <div className="flex items-center gap-1">
-          <button className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-            <MessageSquarePlus className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-            <MoreVertical className="w-4 h-4 text-muted-foreground" />
-          </button>
+          {[MessageSquarePlus, MoreVertical].map((Icon, i) => (
+            <motion.button
+              key={i}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}
+              className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors"
+            >
+              <Icon className="w-4 h-4 text-muted-foreground" />
+            </motion.button>
+          ))}
         </div>
       </div>
 
@@ -46,7 +56,7 @@ export function ChatList({ account, chats, selectedChat, onSelectChat }: ChatLis
             placeholder="Поиск или новый чат"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-secondary rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-full pl-10 pr-4 py-2 bg-secondary rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-shadow duration-200"
           />
         </div>
       </div>
@@ -54,60 +64,81 @@ export function ChatList({ account, chats, selectedChat, onSelectChat }: ChatLis
       {/* Filters */}
       <div className="px-3 pb-2 flex gap-1.5">
         {(["all", "unread", "favorites"] as FilterType[]).map((f) => (
-          <button
+          <motion.button
             key={f}
             onClick={() => setFilter(f)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium transition-colors",
               filter === f ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
             )}
+            layout
           >
             {f === "all" ? "Все" : f === "unread" ? "Непрочитанные" : "Избранное"}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Chat items */}
       <div className="flex-1 overflow-y-auto">
-        {filtered.map((chat) => (
-          <button
-            key={chat.id}
-            onClick={() => onSelectChat(chat.id)}
-            className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left",
-              selectedChat === chat.id && "bg-secondary"
-            )}
-          >
-            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-              {chat.avatar ? (
-                <img src={chat.avatar} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <span className="text-sm font-medium text-muted-foreground">
-                  {chat.name.slice(0, 2).toUpperCase()}
-                </span>
+        <AnimatePresence mode="popLayout">
+          {filtered.map((chat, index) => (
+            <motion.button
+              key={chat.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ delay: index * 0.03, duration: 0.25 }}
+              layout
+              onClick={() => onSelectChat(chat.id)}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left",
+                selectedChat === chat.id && "bg-secondary"
               )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium truncate">{chat.name}</span>
-                <span className={cn("text-[11px] flex-shrink-0 ml-2", chat.unread > 0 ? "text-primary" : "text-muted-foreground")}>
-                  {chat.time}
-                </span>
-              </div>
-              <div className="flex items-center justify-between mt-0.5">
-                <p className="text-xs text-muted-foreground truncate pr-2">
-                  {chat.isRead && <span className="text-wa-blue">✓✓ </span>}
-                  {chat.lastMessage}
-                </p>
-                {chat.unread > 0 && (
-                  <span className="bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
-                    {chat.unread}
+            >
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+              >
+                {chat.avatar ? (
+                  <img src={chat.avatar} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {chat.name.slice(0, 2).toUpperCase()}
                   </span>
                 )}
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium truncate">{chat.name}</span>
+                  <span className={cn("text-[11px] flex-shrink-0 ml-2", chat.unread > 0 ? "text-primary" : "text-muted-foreground")}>
+                    {chat.time}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-xs text-muted-foreground truncate pr-2">
+                    {chat.isRead && <span className="text-wa-blue">✓✓ </span>}
+                    {chat.lastMessage}
+                  </p>
+                  <AnimatePresence>
+                    {chat.unread > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                        className="bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                      >
+                        {chat.unread}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </motion.button>
+          ))}
+        </AnimatePresence>
       </div>
 
       {/* Footer */}
@@ -116,6 +147,6 @@ export function ChatList({ account, chats, selectedChat, onSelectChat }: ChatLis
           🔒 Сообщения защищены сквозным шифрованием
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
