@@ -1,4 +1,5 @@
 import { RefreshCw, Sparkles, Users, Settings, Moon } from "lucide-react";
+import { motion } from "framer-motion";
 import { WaAccount } from "./types";
 
 interface TopBarProps {
@@ -9,17 +10,23 @@ interface TopBarProps {
 
 export function TopBar({ activeAccount, totalAccounts, onOpenSettings }: TopBarProps) {
   return (
-    <div className="h-10 bg-panel-header border-b border-border flex items-center justify-between px-3">
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="h-10 bg-panel-header border-b border-border flex items-center justify-between px-3"
+    >
       <div className="flex items-center gap-2">
-        <button className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-          <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-        <button className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-          <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-        <button className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-          <Users className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
+        {[RefreshCw, Sparkles, Users].map((Icon, i) => (
+          <motion.button
+            key={i}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors"
+          >
+            <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+          </motion.button>
+        ))}
       </div>
 
       <div className="flex items-center gap-3">
@@ -28,26 +35,36 @@ export function TopBar({ activeAccount, totalAccounts, onOpenSettings }: TopBarP
           <span className="text-xs text-muted-foreground">2°C Чернигов</span>
         </div>
         {activeAccount && (
-          <div className="px-3 py-1 bg-secondary rounded-lg">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="px-3 py-1 bg-secondary rounded-lg"
+          >
             <span className="text-xs font-medium">{activeAccount.name}</span>
-          </div>
+          </motion.div>
         )}
       </div>
 
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 px-2 py-1">
-          <div className="w-2 h-2 rounded-full bg-primary" />
+          <motion.div
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="w-2 h-2 rounded-full bg-primary"
+          />
           <span className="text-[11px] text-muted-foreground">
             Готово. Аккаунтов: {totalAccounts}
           </span>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.15, rotate: 45 }}
+          whileTap={{ scale: 0.9 }}
           onClick={onOpenSettings}
           className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors"
         >
           <Settings className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
